@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Işık Dağı 3D İzci Rotası</title>
+  <title>Işık Dağı İzci Rotası</title>
 
   <!-- MapLibre GL 3D CSS -->
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
@@ -14,7 +14,7 @@
   <!-- Minimalist Giriş Ekranı -->
   <div id="auth-overlay">
     <div class="auth-box">
-      <div class="auth-tag">IŞIK DAĞI // 3D</div>
+      <div class="auth-tag">IŞIK DAĞI</div>
       <div class="auth-question">KİM OLDUĞUNU BİLİRSİN SEN</div>
       
       <form id="auth-form" onsubmit="checkAuth(event)">
@@ -37,14 +37,15 @@
     </div>
   </div>
 
-  <!-- 3D Harita Konteyneri -->
+  <!-- 3D Harita Alanı -->
   <div id="map"></div>
 
-  <!-- Üst Bilgi Kartı -->
+  <!-- Üst Bilgi ve Patikaya Oturt Kartı -->
   <div class="info-card">
-    <h3>IŞIK DAĞI 3D</h3>
-    <p id="status">3D Arazi yükleniyor...</p>
-    <button id="locate-btn" onclick="locateMe()">Beni Bul</button>
+    <h3>IŞIK DAĞI</h3>
+    <p id="status"></p>
+    <div id="guide-info"></div>
+    <button id="locate-btn" onclick="locateAndSnapToTrail()">Beni Patikaya Oturt</button>
   </div>
 
   <!-- MapLibre GL 3D Kütüphanesi -->
