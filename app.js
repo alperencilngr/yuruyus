@@ -1,4 +1,4 @@
-// 1. Haritayı başlat
+// 1. Haritayı Başlat (Işık Dağı koordinatları)
 const map = L.map('map', {
   zoomControl: false,
   maxZoom: 19
@@ -6,7 +6,7 @@ const map = L.map('map', {
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-// 2. Google Earth Uydu Katmanı (Varsayılan Katman)
+// 2. Google Earth ve Esri Uydu Katmanları
 const googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
   maxZoom: 20,
   subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
@@ -32,50 +32,72 @@ function kmlColorToHex(kmlColor) {
   return `#${r}${g}${b}`;
 }
 
-// 3. KML Dosyasını Yükle ve Google Earth Stillerini Birebir Koru
-// NOT: Dosya adın ne ise buraya onu yaz (örn: rota.kml)
+// 3. KML Dosyasını Yükle ve Renklendir
+let lineCount = 0;
+
 const kmlLayer = omnivore.kml('rota.kml')
   .on('ready', function() {
     this.eachLayer(function(layer) {
-      // Çizgilerin (Rotaların) Renkleri
+      
+      // Çizgileri (Rotaları) Yakala
       if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-        let lineColor = '#e63946'; // Varsayılan renk
+        lineCount++;
+        const props = (layer.feature && layer.feature.properties) ? layer.feature.properties : {};
+        const name = (props.name || '').toLowerCase();
         
-        // Google Earth'te atadığın renk verisini oku
-        if (layer.feature && layer.feature.properties) {
-          const props = layer.feature.properties;
-          const kmlCol = props.stroke || props.color || props.LineStyleColor;
-          if (kmlCol) {
-            lineColor = kmlColorToHex(kmlCol) || kmlCol;
-          }
+        console.log(`Çizgi #${lineCount} Adı:`, props.name);
+
+        // Varsayılan ilk rota: Canlı fosforlu yeşil
+        let finalColor = '#39ff14';
+
+        // İkinci çizgi veya adı alternatif/kırmızı/ikinci olan çizgi: Canlı Kırmızı
+        if (
+          lineCount === 2 ||
+          name.includes('alternatif') || 
+          name.includes('kırmızı') || 
+          name.includes('ikinci') || 
+          name.includes('dönüş') ||
+          name.includes('2')
+        ) {
+          finalColor = '#ff2a2a';
+        }
+
+        // KML içerisinde gömülü renk tanımlanmışsa öncelikli onu uygula
+        if (props.stroke || props.color) {
+          finalColor = kmlColorToHex(props.stroke || props.color) || finalColor;
         }
 
         layer.setStyle({
-          color: lineColor,
+          color: finalColor,
           weight: 5,
           opacity: 0.95
         });
+
+        if (props.name) {
+          layer.bindPopup(`<strong>📍 Rota: ${props.name}</strong>`);
+        }
       }
 
-      // Noktalar ve Durak İsimleri
-      if (layer.feature && layer.feature.properties) {
-        const name = layer.feature.properties.name || "Nokta";
-        const desc = layer.feature.properties.description || "";
-        layer.bindPopup(`<strong>${name}</strong><br/>${desc}`);
+      // Noktalar ve Duraklar
+      if (layer instanceof L.Marker) {
+        const props = (layer.feature && layer.feature.properties) ? layer.feature.properties : {};
+        const title = props.name || "Durak";
+        const desc = props.description || "";
+        layer.bindPopup(`<strong>${title}</strong><br/>${desc}`);
       }
     });
 
-    // Haritayı rotaların ve noktaların olduğu yere otomatik odakla
+    // Haritayı rotaya odakla
     map.fitBounds(kmlLayer.getBounds(), { padding: [40, 40] });
-    document.getElementById('status').innerText = "Rotalar başarıyla yüklendi.";
+    document.getElementById('status').innerText = "Rotalar yüklendi.";
   })
   .on('error', function(err) {
-    console.error("KML Hatası:", err);
-    document.getElementById('status').innerText = "Dosya okunamadı. Adını kontrol edin.";
+    console.error("KML Yükleme Hatası:", err);
+    document.getElementById('status').innerText = "Dosya okunamadı. rota.kml adını kontrol edin.";
   })
   .addTo(map);
 
-// 4. GPS Canlı Takip
+// 4. GPS Canlı Konum Takibi
 let userMarker = null;
 function locateMe() {
   document.getElementById('status').innerText = "Konum taranıyor...";
@@ -90,9 +112,13 @@ map.on('locationfound', function(e) {
     userMarker = L.circleMarker(e.latlng, {
       radius: 9,
       fillColor: '#0077b6',
-      color: '#fff',
+      color: '#ffffff',
       weight: 3,
       fillOpacity: 1
     }).addTo(map).bindPopup("Şu an buradasın!").openPopup();
   }
+});
+
+map.on('locationerror', function(e) {
+  document.getElementById('status').innerText = "GPS hatası: " + e.message;
 });
