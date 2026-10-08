@@ -17,46 +17,61 @@ body, html {
   height: 100vh;
 }
 
-/* Bilgi Kartı */
+/* Bilgi ve Kılavuz Kartı */
 .info-card {
   position: absolute;
   top: 16px;
   left: 16px;
-  max-width: 260px;
-  background: rgba(12, 15, 13, 0.9);
+  max-width: 280px;
+  background: rgba(12, 15, 13, 0.92);
   border: 1px solid #2d4a3e;
   padding: 12px 14px;
   border-radius: 6px;
   z-index: 1000;
   font-family: ui-monospace, Menlo, Consolas, monospace;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
 }
 
 .info-card h3 {
   font-size: 13px;
   letter-spacing: 1.5px;
-  color: #52b788;
+  color: #52796f;
   margin-bottom: 4px;
 }
 
 .info-card p {
   font-size: 11px;
   color: #95d5b2;
+  margin-bottom: 4px;
+}
+
+#guide-info {
+  font-size: 11px;
+  color: #ffeb3b;
   margin-bottom: 10px;
+  line-height: 1.4;
+  font-weight: 600;
 }
 
 #locate-btn {
   width: 100%;
-  padding: 7px;
+  padding: 8px;
   background-color: #1b4332;
   color: #e0e7e3;
   border: 1px solid #40916c;
   border-radius: 4px;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
-/* Google Earth Tarzı 3D Sarı Raptiye ve Sabit İsimler */
+#locate-btn:active {
+  background-color: #081c15;
+}
+
+/* Google Earth Tarzı Sarı Raptiye ve Sabit İsimler */
 .earth-marker {
   display: flex;
   align-items: center;
@@ -71,7 +86,8 @@ body, html {
   border: 2px solid #000;
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.7);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+  flex-shrink: 0;
 }
 
 .earth-label-text {
@@ -84,7 +100,7 @@ body, html {
   user-select: none;
 }
 
-/* Şifre Giriş Ekranı */
+/* Sade Giriş Ekranı */
 #auth-overlay {
   position: fixed;
   inset: 0;
@@ -123,12 +139,18 @@ body, html {
   border-bottom: 1.5px solid #2d4a3e;
   padding-bottom: 6px;
   margin-bottom: 18px;
+  transition: border-color 0.2s;
+}
+
+.input-line:focus-within {
+  border-color: #52b788;
 }
 
 .prompt-sign {
   color: #52b788;
   font-size: 18px;
   margin-right: 10px;
+  user-select: none;
 }
 
 #auth-input {
@@ -146,7 +168,14 @@ body, html {
   border: none;
   color: #52b788;
   font-size: 13px;
+  letter-spacing: 1px;
   cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.submit-btn:hover {
+  color: #95d5b2;
 }
 
 .auth-error {
