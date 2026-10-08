@@ -3,13 +3,15 @@ function checkAuth(event) {
   event.preventDefault();
   const inputEl = document.getElementById('auth-input');
   const errorEl = document.getElementById('auth-error');
-  const inputVal = inputEl.value.trim().toLocaleLowerCase('tr-TR');
+  
+  // Boşlukları kırp ve standart küçük harfe çevir
+  const inputVal = inputEl.value.trim().toLowerCase();
 
   if (inputVal === 'malcom') {
     const overlay = document.getElementById('auth-overlay');
     if (overlay) overlay.style.display = 'none';
   } else {
-    errorEl.innerText = "erişim reddedildi.";
+    errorEl.innerText = "mal mısın";
     inputEl.value = '';
     inputEl.focus();
   }
@@ -124,8 +126,13 @@ map.on('load', () => {
       for (let i = 0; i < placemarks.length; i++) {
         const pm = placemarks[i];
         const nameEl = pm.getElementsByTagName('name')[0];
-        const name = nameEl ? nameEl.textContent.trim() : '';
+        let name = nameEl ? nameEl.textContent.trim() : '';
         const lowerName = name.toLowerCase();
+
+        // KML içinde geçen "tanışma" veya "ışık dağı" isimli ana başlangıç noktasını "Çakıl" yap
+        if (lowerName.includes('tanışma') || lowerName.includes('tanisma') || lowerName.includes('başlangıç')) {
+          name = 'Çakıl';
+        }
 
         // Bayraklı Çeşme HARİÇ diğer çeşmeler ve Wikiloc çöpleri elenir
         if (
