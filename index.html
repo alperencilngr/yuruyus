@@ -4,41 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Tanışma Yürüyüşü</title>
+
+  <!-- MapLibre GL 3D CSS -->
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
+  <!-- Şifre Ekranı -->
   <div id="auth-overlay">
     <div class="auth-box">
-      <div class="auth-tag">Tanışma Yürüyüşü</div>
-      <div class="auth-question">tek gerçek?</div>
-      
-      <form id="auth-form" onsubmit="checkAuth(event)">
-        <div class="input-line">
-          <span class="prompt-sign">></span>
-          <input 
-            type="text" 
-            id="auth-input" 
-            autocomplete="off" 
-            autocapitalize="none" 
-            spellcheck="false" 
-            placeholder="cevap..." 
-            required 
-          />
-        </div>
-        <button type="submit" class="submit-btn">[ GİRİŞ ]</button>
+      <h2>Giriş Yap</h2>
+      <p>Devam etmek için parolayı girin:</p>
+      <form onsubmit="checkAuth(event)">
+        <input type="password" id="auth-input" placeholder="Parola..." autofocus required />
+        <button type="submit">Giriş</button>
       </form>
-      
-      <div id="auth-error" class="auth-error"></div>
+      <div id="auth-error"></div>
     </div>
   </div>
 
+  <!-- 3D Harita -->
   <div id="map"></div>
 
+  <!-- Üst Bilgi Kartı -->
   <div class="info-card">
     <h3>Yürüyüş</h3>
-    <p id="status">Konum bekleniyor...</p>
+    <p id="status">Yükleniyor...</p>
     <div id="guide-info"></div>
     <button id="locate-btn" onclick="locateAndSnapToTrail()">Beni Patikaya Oturt</button>
   </div>
@@ -54,13 +46,14 @@
         const overlay = document.getElementById('auth-overlay');
         if (overlay) overlay.style.display = 'none';
       } else {
-        errorEl.innerText = "mal mısın?";
+        errorEl.innerText = 'Hatalı parola!';
         inputEl.value = '';
         inputEl.focus();
       }
     }
   </script>
 
+  <!-- MapLibre GL -->
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="app.js"></script>
 </body>
