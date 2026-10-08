@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Işık Dağı Tanışma Yürüyüşü</title>
+  <title>Işık Dağı 3D İzci Rotası</title>
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- MapLibre GL 3D CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -14,7 +14,7 @@
   <!-- Minimalist Giriş Ekranı -->
   <div id="auth-overlay">
     <div class="auth-box">
-      <div class="auth-tag">IŞIK DAĞI // 2026</div>
+      <div class="auth-tag">IŞIK DAĞI // 3D</div>
       <div class="auth-question">KİM OLDUĞUNU BİLİRSİN SEN</div>
       
       <form id="auth-form" onsubmit="checkAuth(event)">
@@ -24,9 +24,9 @@
             type="text" 
             id="auth-input" 
             autocomplete="off" 
-            autocapitalize="none"
-            spellcheck="false"
-            placeholder="cevap..."
+            autocapitalize="none" 
+            spellcheck="false" 
+            placeholder="cevap..." 
             required 
           />
         </div>
@@ -37,19 +37,18 @@
     </div>
   </div>
 
-  <!-- Harita Alanı -->
+  <!-- 3D Harita Konteyneri -->
   <div id="map"></div>
 
   <!-- Üst Bilgi Kartı -->
   <div class="info-card">
-    <h3>IŞIK DAĞI ROTASI</h3>
-    <p id="status">Harita yükleniyor...</p>
-    <button id="locate-btn" onclick="locateMe()">Beni Bul / Takip Et</button>
+    <h3>IŞIK DAĞI 3D</h3>
+    <p id="status">3D Arazi yükleniyor...</p>
+    <button id="locate-btn" onclick="locateMe()">Beni Bul</button>
   </div>
 
-  <!-- Leaflet ve KML Kütüphaneleri -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
+  <!-- MapLibre GL 3D Kütüphanesi -->
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
