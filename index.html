@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Tanışma Yürüyüşü</title>
+  <title>Tanışma</title>
 
   <!-- MapLibre GL 3D CSS -->
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
@@ -11,30 +11,44 @@
 </head>
 <body>
 
-  <!-- Şifre Ekranı -->
+  <!-- Minimalist Giriş Ekranı -->
   <div id="auth-overlay">
     <div class="auth-box">
-      <h2>Giriş Yap</h2>
-      <p>Devam etmek için parolayı girin:</p>
-      <form onsubmit="checkAuth(event)">
-        <input type="password" id="auth-input" placeholder="Parola..." autofocus required />
-        <button type="submit">Giriş</button>
+      <div class="auth-tag">Tanışma Yürüyüşü</div>
+      <div class="auth-question">tek gerçek?</div>
+      
+      <form id="auth-form" onsubmit="checkAuth(event)">
+        <div class="input-line">
+          <span class="prompt-sign">></span>
+          <input 
+            type="text" 
+            id="auth-input" 
+            autocomplete="off" 
+            autocapitalize="none" 
+            spellcheck="false" 
+            placeholder="cevap..." 
+            required 
+          />
+        </div>
+        <button type="submit" class="submit-btn">[ GİRİŞ ]</button>
       </form>
-      <div id="auth-error"></div>
+      
+      <div id="auth-error" class="auth-error"></div>
     </div>
   </div>
 
-  <!-- 3D Harita -->
+  <!-- 3D Harita Alanı -->
   <div id="map"></div>
 
-  <!-- Üst Bilgi Kartı -->
+  <!-- Üst Bilgi ve Patikaya Oturt Kartı -->
   <div class="info-card">
     <h3>Yürüyüş</h3>
-    <p id="status">Yükleniyor...</p>
+    <p id="status"></p>
     <div id="guide-info"></div>
     <button id="locate-btn" onclick="locateAndSnapToTrail()">Beni Patikaya Oturt</button>
   </div>
 
+  <!-- Doğrulama Scripti -->
   <script>
     function checkAuth(event) {
       event.preventDefault();
@@ -46,14 +60,14 @@
         const overlay = document.getElementById('auth-overlay');
         if (overlay) overlay.style.display = 'none';
       } else {
-        errorEl.innerText = 'Hatalı parola!';
+        errorEl.innerText = "mal mısın?";
         inputEl.value = '';
         inputEl.focus();
       }
     }
   </script>
 
-  <!-- MapLibre GL -->
+  <!-- MapLibre GL 3D Kütüphanesi -->
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="app.js"></script>
 </body>
