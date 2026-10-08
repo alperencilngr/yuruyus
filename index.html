@@ -48,6 +48,27 @@
     <button id="locate-btn" onclick="locateAndSnapToTrail()">Beni Patikaya Oturt</button>
   </div>
 
+  <!-- Doğrulama Scripti (Önbelleğe Takılmadan Anında Çalışır) -->
+  <script>
+    function checkAuth(event) {
+      event.preventDefault();
+      const inputEl = document.getElementById('auth-input');
+      const errorEl = document.getElementById('auth-error');
+      
+      // Boşlukları temizle ve küçük harfe dönüştür
+      const val = inputEl.value.trim().toLowerCase();
+
+      if (val === 'malcom') {
+        const overlay = document.getElementById('auth-overlay');
+        if (overlay) overlay.style.display = 'none';
+      } else {
+        errorEl.innerText = "mal mısın?";
+        inputEl.value = '';
+        inputEl.focus();
+      }
+    }
+  </script>
+
   <!-- MapLibre GL 3D Kütüphanesi -->
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="app.js"></script>
