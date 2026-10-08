@@ -5,7 +5,7 @@ function checkAuth(event) {
   const errorEl = document.getElementById('auth-error');
   const inputVal = inputEl.value.trim().toLocaleLowerCase('tr-TR');
 
-  if (inputVal === 'ali') {
+  if (inputVal === 'malcom') {
     const overlay = document.getElementById('auth-overlay');
     if (overlay) overlay.style.display = 'none';
   } else {
