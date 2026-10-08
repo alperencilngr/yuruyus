@@ -1,4 +1,3 @@
-// Harita Başlatma
 const map = new maplibregl.Map({
   container: 'map',
   style: 'https://demotiles.maplibre.org/style.json',
@@ -8,11 +7,7 @@ const map = new maplibregl.Map({
 });
 
 let userMarker = null;
-let headingConeEl = null;
-let currentCoords = null;
-let orientationActive = false;
 
-// KML Yükleme
 map.on('load', () => {
   fetch('rota.kml')
     .then(res => res.text())
@@ -58,7 +53,7 @@ map.on('load', () => {
 
       map.addSource('trails', { type: 'geojson', data: geojson });
 
-      // Mavi Ana Hat
+      // Mavi Yol
       map.addLayer({
         id: 'trail-blue',
         type: 'line',
@@ -77,110 +72,44 @@ map.on('load', () => {
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: { 'line-color': '#ff3b30', 'line-width': 4 }
       });
-    })
-    .catch(err => console.error('KML Yüklenemedi:', err));
 
-  // Canlı GPS Başlat
-  startLiveTracking();
+      document.getElementById('status').innerText = 'Rota Yüklendi';
+    })
+    .catch(err => {
+      console.error('KML yükleme hatası:', err);
+      document.getElementById('status').innerText = 'Hata oluştu';
+    });
 });
 
-// Kullanıcı İşaretçisi Oluşturma
-function createUserMarker(lngLat) {
-  const container = document.createElement('div');
-  container.className = 'user-location-marker';
-
-  const cone = document.createElement('div');
-  cone.className = 'user-heading-cone';
-  headingConeEl = cone;
-
-  const dot = document.createElement('div');
-  dot.className = 'user-dot';
-
-  container.appendChild(cone);
-  container.appendChild(dot);
-
-  userMarker = new maplibregl.Marker({ element: container })
-    .setLngLat(lngLat)
-    .addTo(map);
-}
-
-// 1. Canlı Konum Takibi
-function startLiveTracking() {
+// Orijinal "Beni Patikaya Oturt" Butonu
+function locateAndSnapToTrail() {
   if (!navigator.geolocation) {
-    document.getElementById('status').innerText = 'GPS desteklenmiyor';
+    alert('Tarayıcınız konum servisini desteklemiyor.');
     return;
   }
 
-  navigator.geolocation.watchPosition(
+  document.getElementById('status').innerText = 'Konum alınıyor...';
+
+  navigator.geolocation.getCurrentPosition(
     (pos) => {
-      const lngLat = [pos.coords.longitude, pos.coords.latitude];
-      currentCoords = lngLat;
-      document.getElementById('status').innerText = 'GPS Aktif';
+      const userLng = pos.coords.longitude;
+      const userLat = pos.coords.latitude;
 
       if (!userMarker) {
-        createUserMarker(lngLat);
+        userMarker = new maplibregl.Marker({ color: '#007aff' })
+          .setLngLat([userLng, userLat])
+          .addTo(map);
       } else {
-        userMarker.setLngLat(lngLat);
+        userMarker.setLngLat([userLng, userLat]);
       }
+
+      map.flyTo({ center: [userLng, userLat], zoom: 16 });
+      document.getElementById('status').innerText = 'Konum Bulundu';
     },
     (err) => {
-      document.getElementById('status').innerText = 'GPS Alınamadı';
+      alert('Konum alınamadı: ' + err.message);
+      document.getElementById('status').innerText = 'Konum Hatası';
     },
-    { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 }
+    { enableHighAccuracy: true }
   );
-}
-
-// 2. Telefon Pusula Dinleyicisi
-function enableOrientation() {
-  if (orientationActive) return;
-
-  // iOS 13+ İzin Protokolü
-  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-    DeviceOrientationEvent.requestPermission()
-      .then((state) => {
-        if (state === 'granted') {
-          window.addEventListener('deviceorientation', handleOrientation, true);
-          orientationActive = true;
-        }
-      })
-      .catch(console.error);
-  } else {
-    // Android ve Standart Tarayıcılar
-    window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-    window.addEventListener('deviceorientation', handleOrientation, true);
-    orientationActive = true;
-  }
-}
-
-function handleOrientation(e) {
-  let compass = null;
-
-  if (e.webkitCompassHeading) {
-    compass = e.webkitCompassHeading;
-  } else if (e.alpha !== null) {
-    compass = 360 - e.alpha;
-  }
-
-  if (compass !== null && headingConeEl) {
-    headingConeEl.style.transform = `rotate(${compass}deg)`;
-  }
-}
-
-// "Beni Patikaya Oturt" Butonu
-function locateAndSnapToTrail() {
-  enableOrientation();
-
-  if (currentCoords) {
-    map.flyTo({ center: currentCoords, zoom: 16 });
-  } else {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lngLat = [pos.coords.longitude, pos.coords.latitude];
-        currentCoords = lngLat;
-        if (!userMarker) createUserMarker(lngLat);
-        map.flyTo({ center: lngLat, zoom: 16 });
-      },
-      () => alert('Konum alınamadı, GPS iznini kontrol edin.')
-    );
-  }
 }
