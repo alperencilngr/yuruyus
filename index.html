@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Işık Dağı İzci Yürüyüş Rotası</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="info-card">
+    <h3>🏕️ Işık Dağı Yürüyüşü</h3>
+    <p id="status">Harita yükleniyor...</p>
+    <button id="locate-btn" onclick="locateMe()">Beni Bul / Takip Et</button>
+  </div>
+
+  <!-- Leaflet ve KML/KMZ Çözücü -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
