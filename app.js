@@ -46,7 +46,7 @@ L.control.layers({
   "Esri Canlı Uydu": esriSat
 }, null, { position: 'topright' }).addTo(map);
 
-// --- 3. KML Doğrudan XML Olarak Okuma (Kayıpsız Yöntem) ---
+// --- 3. KML Ayrıştırma ve Doğrudan Çizim ---
 fetch('rota.kml')
   .then(res => {
     if (!res.ok) throw new Error("rota.kml dosyası bulunamadı!");
@@ -63,12 +63,24 @@ fetch('rota.kml')
     for (let i = 0; i < placemarks.length; i++) {
       const pm = placemarks[i];
       const nameEl = pm.getElementsByTagName('name')[0];
-      const name = nameEl ? nameEl.textContent.trim() : `Öğe ${i+1}`;
+      const name = nameEl ? nameEl.textContent.trim() : '';
       
       const descEl = pm.getElementsByTagName('description')[0];
       const desc = descEl ? descEl.textContent.trim() : '';
+      const lowerName = name.toLowerCase();
 
-      // A) ÇİZGİLER (LineString)
+      // İstenmeyen Wikiloc / çöp ara noktaları filtrele
+      if (
+        lowerName.includes('ceyda') ||
+        lowerName.includes('wikiloc') ||
+        lowerName.includes('ara nokta') ||
+        lowerName.startsWith('wpt') ||
+        lowerName.startsWith('waypoint')
+      ) {
+        continue;
+      }
+
+      // A) ROTA ÇİZGİLERİ
       const lineString = pm.getElementsByTagName('LineString')[0];
       if (lineString) {
         pathCount++;
@@ -88,24 +100,20 @@ fetch('rota.kml')
           }
         });
 
-        // İsim kontrolü: "sevgi" ise KIRMIZI, diğeri MAVİ
-        let strokeColor = '#0070f3'; // Standart Mavi yol (Path)
-        const lowerName = name.toLowerCase();
-
+        // "sevgi" ise kırmızı, diğeri mavi
+        let strokeColor = '#0066ff';
         if (lowerName.includes('sevgi') || lowerName.includes('kırmızı') || pathCount === 2) {
-          strokeColor = '#ff2200'; // Kırmızı yol (sevgi)
+          strokeColor = '#ff2200';
         }
 
-        const polyline = L.polyline(latLngs, {
+        L.polyline(latLngs, {
           color: strokeColor,
           weight: 5,
           opacity: 0.95
         }).addTo(map);
-
-        polyline.bindPopup(`<strong>📍 Rota: ${name}</strong><br/>${desc}`);
       }
 
-      // B) NOKTALAR (Point / Placemark)
+      // B) NOKTALAR VE SABİT YAZILAR (Tıklamadan Ekranda Görünen)
       const point = pm.getElementsByTagName('Point')[0];
       if (point) {
         const coordsText = point.getElementsByTagName('coordinates')[0].textContent.trim();
@@ -116,27 +124,33 @@ fetch('rota.kml')
           if (!isNaN(lat) && !isNaN(lng)) {
             allBounds.push([lat, lng]);
 
-            // Google Earth'teki sarı raptiye stili
+            // Google Earth Tarzı Sarı Raptiye İkonu
             const pinIcon = L.divIcon({
-              className: 'custom-pin',
+              className: 'earth-pin',
               html: `<div style="
                 background-color: #ffd166;
-                width: 22px;
-                height: 22px;
+                width: 18px;
+                height: 18px;
                 border-radius: 50% 50% 50% 0;
                 transform: rotate(-45deg);
                 border: 2px solid #000;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-              "><div style="width: 6px; height: 6px; background: #000; border-radius: 50%; transform: rotate(45deg);"></div></div>`,
-              iconSize: [24, 24],
-              iconAnchor: [6, 22]
+                box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+              "></div>`,
+              iconSize: [20, 20],
+              iconAnchor: [5, 18]
             });
 
             const marker = L.marker([lat, lng], { icon: pinIcon }).addTo(map);
-            marker.bindPopup(`<strong>${name}</strong><br/>${desc}`);
+
+            // Tıklamadan sürekli açık duran yazı etiketi
+            if (name) {
+              marker.bindTooltip(name, {
+                permanent: true,
+                direction: 'right',
+                offset: [10, -10],
+                className: 'earth-label'
+              });
+            }
           }
         }
       }
@@ -144,7 +158,7 @@ fetch('rota.kml')
 
     if (allBounds.length > 0) {
       map.fitBounds(allBounds, { padding: [50, 50] });
-      document.getElementById('status').innerText = `Rotalar yüklendi: ${pathCount} hat aktif.`;
+      document.getElementById('status').innerText = `Rotalar yüklendi.`;
     }
   })
   .catch(err => {
