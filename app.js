@@ -21,7 +21,7 @@ if (sessionStorage.getItem('is_authenticated') === 'true') {
   if (overlay) overlay.style.display = 'none';
 }
 
-// --- 2. Harita Başlatma ---
+// --- 2. Harita Kurulumu ---
 const map = L.map('map', {
   zoomControl: false,
   maxZoom: 19
@@ -36,7 +36,6 @@ const googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s,h&x={x}&y={y}&z=
   attribution: '© Google Earth'
 }).addTo(map);
 
-// Esri Uydu Katmanı
 const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
   maxZoom: 19,
   attribution: '© Esri'
@@ -47,76 +46,113 @@ L.control.layers({
   "Esri Canlı Uydu": esriSat
 }, null, { position: 'topright' }).addTo(map);
 
-function kmlColorToHex(kmlColor) {
-  if (!kmlColor || kmlColor.length < 8) return null;
-  const r = kmlColor.substring(6, 8);
-  const g = kmlColor.substring(4, 6);
-  const b = kmlColor.substring(2, 4);
-  return `#${r}${g}${b}`;
-}
+// --- 3. KML Doğrudan XML Olarak Okuma (Kayıpsız Yöntem) ---
+fetch('rota.kml')
+  .then(res => {
+    if (!res.ok) throw new Error("rota.kml dosyası bulunamadı!");
+    return res.text();
+  })
+  .then(kmlText => {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(kmlText, 'text/xml');
+    const placemarks = xmlDoc.getElementsByTagName('Placemark');
+    
+    const allBounds = [];
+    let pathCount = 0;
 
-// --- 3. KML Verisini Yükleme ---
-let lineCount = 0;
+    for (let i = 0; i < placemarks.length; i++) {
+      const pm = placemarks[i];
+      const nameEl = pm.getElementsByTagName('name')[0];
+      const name = nameEl ? nameEl.textContent.trim() : `Öğe ${i+1}`;
+      
+      const descEl = pm.getElementsByTagName('description')[0];
+      const desc = descEl ? descEl.textContent.trim() : '';
 
-const kmlLayer = omnivore.kml('rota.kml')
-  .on('ready', function() {
-    this.eachLayer(function(layer) {
-      // Çizgileri yakala
-      const isLine = (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) ||
-                     (layer.feature && layer.feature.geometry && 
-                      (layer.feature.geometry.type === 'LineString' || layer.feature.geometry.type === 'MultiLineString'));
-
-      if (isLine) {
-        lineCount++;
-        const props = (layer.feature && layer.feature.properties) ? layer.feature.properties : {};
-        const name = (props.name || '').trim();
-        const lowerName = name.toLowerCase();
-
-        // 1. Hat yeşil, 2. Hat kırmızı
-        let strokeColor = (lineCount >= 2) ? '#ff2a2a' : '#39ff14';
-
-        if (lowerName.includes('alternatif') || lowerName.includes('kırmızı') || lowerName.includes('ikinci') || lowerName.includes('2')) {
-          strokeColor = '#ff2a2a';
-        }
-
-        if (props.stroke || props.color) {
-          strokeColor = kmlColorToHex(props.stroke || props.color) || strokeColor;
-        }
-
-        layer.setStyle({
-          color: strokeColor,
-          weight: 6,
-          opacity: 0.95
+      // A) ÇİZGİLER (LineString)
+      const lineString = pm.getElementsByTagName('LineString')[0];
+      if (lineString) {
+        pathCount++;
+        const coordsText = lineString.getElementsByTagName('coordinates')[0].textContent.trim();
+        const coordLines = coordsText.split(/\s+/);
+        
+        const latLngs = [];
+        coordLines.forEach(pair => {
+          const parts = pair.split(',');
+          if (parts.length >= 2) {
+            const lng = parseFloat(parts[0]);
+            const lat = parseFloat(parts[1]);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              latLngs.push([lat, lng]);
+              allBounds.push([lat, lng]);
+            }
+          }
         });
 
-        if (layer.bringToFront) {
-          layer.bringToFront();
+        // İsim kontrolü: "sevgi" ise KIRMIZI, diğeri MAVİ
+        let strokeColor = '#0070f3'; // Standart Mavi yol (Path)
+        const lowerName = name.toLowerCase();
+
+        if (lowerName.includes('sevgi') || lowerName.includes('kırmızı') || pathCount === 2) {
+          strokeColor = '#ff2200'; // Kırmızı yol (sevgi)
         }
 
-        if (name) {
-          layer.bindPopup(`<strong>📍 Rota: ${name}</strong>`);
+        const polyline = L.polyline(latLngs, {
+          color: strokeColor,
+          weight: 5,
+          opacity: 0.95
+        }).addTo(map);
+
+        polyline.bindPopup(`<strong>📍 Rota: ${name}</strong><br/>${desc}`);
+      }
+
+      // B) NOKTALAR (Point / Placemark)
+      const point = pm.getElementsByTagName('Point')[0];
+      if (point) {
+        const coordsText = point.getElementsByTagName('coordinates')[0].textContent.trim();
+        const parts = coordsText.split(',');
+        if (parts.length >= 2) {
+          const lng = parseFloat(parts[0]);
+          const lat = parseFloat(parts[1]);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            allBounds.push([lat, lng]);
+
+            // Google Earth'teki sarı raptiye stili
+            const pinIcon = L.divIcon({
+              className: 'custom-pin',
+              html: `<div style="
+                background-color: #ffd166;
+                width: 22px;
+                height: 22px;
+                border-radius: 50% 50% 50% 0;
+                transform: rotate(-45deg);
+                border: 2px solid #000;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "><div style="width: 6px; height: 6px; background: #000; border-radius: 50%; transform: rotate(45deg);"></div></div>`,
+              iconSize: [24, 24],
+              iconAnchor: [6, 22]
+            });
+
+            const marker = L.marker([lat, lng], { icon: pinIcon }).addTo(map);
+            marker.bindPopup(`<strong>${name}</strong><br/>${desc}`);
+          }
         }
       }
+    }
 
-      // Noktalar
-      if (layer instanceof L.Marker) {
-        const props = (layer.feature && layer.feature.properties) ? layer.feature.properties : {};
-        const title = props.name || "Nokta";
-        const desc = props.description || "";
-        layer.bindPopup(`<strong>${title}</strong><br/>${desc}`);
-      }
-    });
-
-    map.fitBounds(kmlLayer.getBounds(), { padding: [40, 40] });
-    document.getElementById('status').innerText = `Rotalar yüklendi (${lineCount} hat).`;
+    if (allBounds.length > 0) {
+      map.fitBounds(allBounds, { padding: [50, 50] });
+      document.getElementById('status').innerText = `Rotalar yüklendi: ${pathCount} hat aktif.`;
+    }
   })
-  .on('error', function(err) {
-    console.error("KML Hatası:", err);
-    document.getElementById('status').innerText = "Dosya okunamadı.";
-  })
-  .addTo(map);
+  .catch(err => {
+    console.error("Yükleme hatası:", err);
+    document.getElementById('status').innerText = "Hata: " + err.message;
+  });
 
-// --- 4. Canlı Konum Takibi ---
+// --- 4. GPS Canlı Konum ---
 let userMarker = null;
 
 function locateMe() {
@@ -131,7 +167,7 @@ map.on('locationfound', function(e) {
   } else {
     userMarker = L.circleMarker(e.latlng, {
       radius: 8,
-      fillColor: '#0077b6',
+      fillColor: '#00e5ff',
       color: '#ffffff',
       weight: 3,
       fillOpacity: 1
