@@ -48,12 +48,14 @@
     <button id="locate-btn" onclick="locateAndSnapToTrail()">Beni Patikaya Oturt</button>
   </div>
 
-  <!-- Doğrulama Scripti -->
+  <!-- Doğrulama Scripti (Önbelleğe Takılmadan Anında Çalışır) -->
   <script>
     function checkAuth(event) {
       event.preventDefault();
       const inputEl = document.getElementById('auth-input');
       const errorEl = document.getElementById('auth-error');
+      
+      // Boşlukları temizle ve küçük harfe dönüştür
       const val = inputEl.value.trim().toLowerCase();
 
       if (val === 'malcom') {
