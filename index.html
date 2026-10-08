@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Tanışma</title>
-
-  <!-- MapLibre GL 3D CSS -->
+  <title>Tanışma Yürüyüşü</title>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- Minimalist Giriş Ekranı -->
   <div id="auth-overlay">
     <div class="auth-box">
       <div class="auth-tag">Tanışma Yürüyüşü</div>
@@ -37,25 +34,20 @@
     </div>
   </div>
 
-  <!-- 3D Harita Alanı -->
   <div id="map"></div>
 
-  <!-- Üst Bilgi ve Patikaya Oturt Kartı -->
   <div class="info-card">
     <h3>Yürüyüş</h3>
-    <p id="status"></p>
+    <p id="status">Konum bekleniyor...</p>
     <div id="guide-info"></div>
     <button id="locate-btn" onclick="locateAndSnapToTrail()">Beni Patikaya Oturt</button>
   </div>
 
-  <!-- Doğrulama Scripti (Önbelleğe Takılmadan Anında Çalışır) -->
   <script>
     function checkAuth(event) {
       event.preventDefault();
       const inputEl = document.getElementById('auth-input');
       const errorEl = document.getElementById('auth-error');
-      
-      // Boşlukları temizle ve küçük harfe dönüştür
       const val = inputEl.value.trim().toLowerCase();
 
       if (val === 'malcom') {
@@ -69,7 +61,6 @@
     }
   </script>
 
-  <!-- MapLibre GL 3D Kütüphanesi -->
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="app.js"></script>
 </body>
