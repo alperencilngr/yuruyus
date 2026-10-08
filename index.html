@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Işık Dağı İzci Yürüyüş Rotası</title>
+  <title>Işık Dağı Tanışma Yürüyüşü</title>
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,25 +11,29 @@
 </head>
 <body>
 
-  <!-- Orman Temalı Giriş Ekranı -->
+  <!-- Minimalist Giriş Ekranı -->
   <div id="auth-overlay">
-    <div class="auth-card">
-      <div class="tree-badge">🌲 🏕️ 🌲</div>
-      <h2 class="auth-title">KİM OLDUĞUNU BİLİRSİN SEN</h2>
+    <div class="auth-box">
+      <div class="auth-tag">IŞIK DAĞI // 2026</div>
+      <div class="auth-question">KİM OLDUĞUNU BİLİRSİN SEN</div>
       
       <form id="auth-form" onsubmit="checkAuth(event)">
-        <input 
-          type="text" 
-          id="auth-input" 
-          placeholder="Parolayı gir..." 
-          autocomplete="off" 
-          autocapitalize="none"
-          spellcheck="false"
-          required 
-        />
-        <button type="submit" id="auth-btn">İçeri Gir</button>
+        <div class="input-line">
+          <span class="prompt-sign">></span>
+          <input 
+            type="text" 
+            id="auth-input" 
+            autocomplete="off" 
+            autocapitalize="none"
+            spellcheck="false"
+            placeholder="cevap..."
+            required 
+          />
+        </div>
+        <button type="submit" class="submit-btn">[ GİRİŞ ]</button>
       </form>
-      <p id="auth-error" class="auth-error"></p>
+      
+      <div id="auth-error" class="auth-error"></div>
     </div>
   </div>
 
@@ -38,12 +42,12 @@
 
   <!-- Üst Bilgi Kartı -->
   <div class="info-card">
-    <h3>🏕️ Tanışma Yürüyüşü</h3>
-    <p id="status"> yükleniyor...</p>
+    <h3>IŞIK DAĞI ROTASI</h3>
+    <p id="status">Harita yükleniyor...</p>
     <button id="locate-btn" onclick="locateMe()">Beni Bul / Takip Et</button>
   </div>
 
-  <!-- Kütüphaneler -->
+  <!-- Leaflet ve KML Kütüphaneleri -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
   <script src="app.js"></script>
