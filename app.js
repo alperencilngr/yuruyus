@@ -56,7 +56,7 @@ map.addControl(new maplibregl.NavigationControl({
   visualizePitch: true
 }), 'top-right');
 
-// --- 3. KML Verisi, Çeşme Filtresi ve Özel Kamp Alanı ---
+// --- 3. KML Verisi, Filtreler ve Kamp Alanı ---
 map.on('load', () => {
   fetch('rota.kml')
     .then(res => {
@@ -109,9 +109,9 @@ map.on('load', () => {
             }
           });
 
-          let lineColor = '#0070f3'; // Path mavi
+          let lineColor = '#0070f3'; // Path mavi[cite: 3]
           if (lowerName.includes('sevgi') || lowerName.includes('kırmızı') || pathCount === 2) {
-            lineColor = '#ff2200'; // sevgi kırmızı
+            lineColor = '#ff2200'; // sevgi kırmızı[cite: 3]
           }
 
           const sourceId = `line-source-${i}`;
@@ -135,7 +135,7 @@ map.on('load', () => {
           });
         }
 
-        // B) NOKTALAR VE METİNLER
+        // B) NOKTALAR VE METİNLER (Sarı Raptiye + Sabit Yazı)[cite: 3, 4]
         const point = pm.getElementsByTagName('Point')[0];
         if (point) {
           const coordsText = point.getElementsByTagName('coordinates')[0].textContent.trim();
@@ -161,8 +161,7 @@ map.on('load', () => {
         }
       }
 
-      // --- C) ÖZEL İŞARET: 1. Eğitim Kamp Alanı (Kök Merdivenler / Ayıbar Tarzı) ---
-      // Koordinat: 40°40'43.59"K 32°44'20.65"D -> [32.739069, 40.678775]
+      // --- C) 1. Eğitim Kamp Alanı (Diğer Noktalarla Birebir Aynı Sarı Raptiye Tasarımı) ---
       const campLng = 32.739069;
       const campLat = 40.678775;
       bounds.extend([campLng, campLat]);
@@ -170,19 +169,8 @@ map.on('load', () => {
       const campEl = document.createElement('div');
       campEl.className = 'earth-marker';
       campEl.innerHTML = `
-        <div style="
-          width: 32px;
-          height: 32px;
-          background: #3e2723;
-          border: 2px solid #d7ccc8;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 17px;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.8);
-        ">⛺</div>
-        <div class="earth-label-text" style="color: #ffcc80;">1.eğitim kamp alanı</div>
+        <div class="earth-pin-icon"></div>
+        <div class="earth-label-text">1.eğitim kamp alanı</div>
       `;
 
       new maplibregl.Marker({ element: campEl, anchor: 'bottom-left' })
@@ -194,7 +182,6 @@ map.on('load', () => {
         map.fitBounds(bounds, { padding: 60, pitch: 55 });
       }
 
-      // "3D Rota hazır" yazısı silindi
       const statusEl = document.getElementById('status');
       if (statusEl) statusEl.innerText = '';
     })
