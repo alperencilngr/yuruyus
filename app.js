@@ -1,4 +1,4 @@
-// --- 1. Şifre Doğrulama Sistemi ---
+// --- 1. Giriş Doğrulama ---
 function checkAuth(event) {
   event.preventDefault();
   const inputEl = document.getElementById('auth-input');
@@ -10,19 +10,18 @@ function checkAuth(event) {
     const overlay = document.getElementById('auth-overlay');
     if (overlay) overlay.style.display = 'none';
   } else {
-    errorEl.innerText = "Yanlış cevap, yol seni içeri almıyor...";
+    errorEl.innerText = "erişim reddedildi.";
     inputEl.value = '';
     inputEl.focus();
   }
 }
 
-// Oturum kontrolü (sayfa yenilendiğinde tekrar sormasın)
 if (sessionStorage.getItem('is_authenticated') === 'true') {
   const overlay = document.getElementById('auth-overlay');
   if (overlay) overlay.style.display = 'none';
 }
 
-// --- 2. Harita Kurulumu ---
+// --- 2. Harita Başlatma ---
 const map = L.map('map', {
   zoomControl: false,
   maxZoom: 19
@@ -40,7 +39,7 @@ const googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s,h&x={x}&y={y}&z=
 // Esri Uydu Katmanı
 const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
   maxZoom: 19,
-  attribution: '© Esri Satellite'
+  attribution: '© Esri'
 });
 
 L.control.layers({
@@ -48,7 +47,6 @@ L.control.layers({
   "Esri Canlı Uydu": esriSat
 }, null, { position: 'topright' }).addTo(map);
 
-// KML Renk Çevirici (AABBGGRR -> #RRGGBB)
 function kmlColorToHex(kmlColor) {
   if (!kmlColor || kmlColor.length < 8) return null;
   const r = kmlColor.substring(6, 8);
@@ -57,13 +55,11 @@ function kmlColorToHex(kmlColor) {
   return `#${r}${g}${b}`;
 }
 
-// --- 3. KML Yükleme ve Çizgileri Boyama ---
+// --- 3. KML Verisini Yükleme ---
 let lineCount = 0;
 
 const kmlLayer = omnivore.kml('rota.kml')
   .on('ready', function() {
-    console.log("KML yüklendi, öğeler taranıyor...");
-
     this.eachLayer(function(layer) {
       // Çizgileri yakala
       const isLine = (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) ||
@@ -76,17 +72,13 @@ const kmlLayer = omnivore.kml('rota.kml')
         const name = (props.name || '').trim();
         const lowerName = name.toLowerCase();
 
-        console.log(`Çizgi #${lineCount}:`, name);
-
-        // 1. Yol: Canlı fosforlu yeşil
-        // 2. Yol veya içinde alternatif/kırmızı/2 geçen: Kırmızı
+        // 1. Hat yeşil, 2. Hat kırmızı
         let strokeColor = (lineCount >= 2) ? '#ff2a2a' : '#39ff14';
 
         if (lowerName.includes('alternatif') || lowerName.includes('kırmızı') || lowerName.includes('ikinci') || lowerName.includes('2')) {
           strokeColor = '#ff2a2a';
         }
 
-        // KML içinde hazır stil varsa onu al
         if (props.stroke || props.color) {
           strokeColor = kmlColorToHex(props.stroke || props.color) || strokeColor;
         }
@@ -106,7 +98,7 @@ const kmlLayer = omnivore.kml('rota.kml')
         }
       }
 
-      // Duraklar ve Noktalar
+      // Noktalar
       if (layer instanceof L.Marker) {
         const props = (layer.feature && layer.feature.properties) ? layer.feature.properties : {};
         const title = props.name || "Nokta";
@@ -116,15 +108,15 @@ const kmlLayer = omnivore.kml('rota.kml')
     });
 
     map.fitBounds(kmlLayer.getBounds(), { padding: [40, 40] });
-    document.getElementById('status').innerText = `Rotalar yüklendi (${lineCount} çizgi).`;
+    document.getElementById('status').innerText = `Rotalar yüklendi (${lineCount} hat).`;
   })
   .on('error', function(err) {
     console.error("KML Hatası:", err);
-    document.getElementById('status').innerText = "rota.kml okunamadı.";
+    document.getElementById('status').innerText = "Dosya okunamadı.";
   })
   .addTo(map);
 
-// --- 4. GPS Canlı Konum Takibi ---
+// --- 4. Canlı Konum Takibi ---
 let userMarker = null;
 
 function locateMe() {
@@ -133,17 +125,17 @@ function locateMe() {
 }
 
 map.on('locationfound', function(e) {
-  document.getElementById('status').innerText = `Doğruluk: ±${Math.round(e.accuracy)}m`;
+  document.getElementById('status').innerText = `Hassasiyet: ±${Math.round(e.accuracy)}m`;
   if (userMarker) {
     userMarker.setLatLng(e.latlng);
   } else {
     userMarker = L.circleMarker(e.latlng, {
-      radius: 9,
+      radius: 8,
       fillColor: '#0077b6',
       color: '#ffffff',
       weight: 3,
       fillOpacity: 1
-    }).addTo(map).bindPopup("Şu an buradasın!").openPopup();
+    }).addTo(map).bindPopup("Mevcut Konum").openPopup();
   }
 });
 
