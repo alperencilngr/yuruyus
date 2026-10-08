@@ -10,15 +10,40 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+  <!-- Orman Temalı Giriş Ekranı -->
+  <div id="auth-overlay">
+    <div class="auth-card">
+      <div class="tree-badge">🌲 🏕️ 🌲</div>
+      <h2 class="auth-title">KİM OLDUĞUNU BİLİRSİN SEN</h2>
+      
+      <form id="auth-form" onsubmit="checkAuth(event)">
+        <input 
+          type="text" 
+          id="auth-input" 
+          placeholder="Parolayı gir..." 
+          autocomplete="off" 
+          autocapitalize="none"
+          spellcheck="false"
+          required 
+        />
+        <button type="submit" id="auth-btn">İçeri Gir</button>
+      </form>
+      <p id="auth-error" class="auth-error"></p>
+    </div>
+  </div>
+
+  <!-- Harita Alanı -->
   <div id="map"></div>
 
+  <!-- Üst Bilgi Kartı -->
   <div class="info-card">
-    <h3>🏕️ Işık Dağı Yürüyüşü</h3>
-    <p id="status">Harita yükleniyor...</p>
+    <h3>🏕️ Tanışma Yürüyüşü</h3>
+    <p id="status"> yükleniyor...</p>
     <button id="locate-btn" onclick="locateMe()">Beni Bul / Takip Et</button>
   </div>
 
-  <!-- Leaflet ve KML/KMZ Çözücü -->
+  <!-- Kütüphaneler -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
   <script src="app.js"></script>
