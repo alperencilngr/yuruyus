@@ -1,10 +1,49 @@
+// Google Uydu Altlığı ve 3D Arazi (Terrain) Katmanı
 const map = new maplibregl.Map({
   container: 'map',
-  style: 'https://demotiles.maplibre.org/style.json',
+  style: {
+    version: 8,
+    sources: {
+      'google-satellite': {
+        type: 'raster',
+        tiles: [
+          'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+          'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+          'https://mt2.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+          'https://mt3.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'
+        ],
+        tileSize: 256
+      },
+      'terrain-source': {
+        type: 'raster-dem',
+        tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+        encoding: 'terrarium',
+        tileSize: 256,
+        maxzoom: 15
+      }
+    },
+    layers: [
+      {
+        id: 'google-satellite-layer',
+        type: 'raster',
+        source: 'google-satellite',
+        paint: {}
+      }
+    ],
+    terrain: {
+      source: 'terrain-source',
+      exaggeration: 1.3
+    }
+  },
   center: [32.747, 40.662],
-  zoom: 13,
-  pitch: 45
+  zoom: 13.5,
+  pitch: 50,
+  bearing: -10,
+  maxPitch: 85
 });
+
+// Kontroller
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
 
 let userMarker = null;
 
@@ -53,7 +92,7 @@ map.on('load', () => {
 
       map.addSource('trails', { type: 'geojson', data: geojson });
 
-      // Mavi Yol
+      // Mavi Ana Hat
       map.addLayer({
         id: 'trail-blue',
         type: 'line',
@@ -76,19 +115,19 @@ map.on('load', () => {
       document.getElementById('status').innerText = 'Rota Yüklendi';
     })
     .catch(err => {
-      console.error('KML yükleme hatası:', err);
-      document.getElementById('status').innerText = 'Hata oluştu';
+      console.error('KML yüklenirken hata:', err);
+      document.getElementById('status').innerText = 'Rota yüklenemedi';
     });
 });
 
-// Orijinal "Beni Patikaya Oturt" Butonu
+// "Beni Patikaya Oturt" Butonu
 function locateAndSnapToTrail() {
   if (!navigator.geolocation) {
     alert('Tarayıcınız konum servisini desteklemiyor.');
     return;
   }
 
-  document.getElementById('status').innerText = 'Konum alınıyor...';
+  document.getElementById('status').innerText = 'Konum aranıyor...';
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
@@ -104,11 +143,11 @@ function locateAndSnapToTrail() {
       }
 
       map.flyTo({ center: [userLng, userLat], zoom: 16 });
-      document.getElementById('status').innerText = 'Konum Bulundu';
+      document.getElementById('status').innerText = 'Konumdasınız';
     },
     (err) => {
       alert('Konum alınamadı: ' + err.message);
-      document.getElementById('status').innerText = 'Konum Hatası';
+      document.getElementById('status').innerText = 'Konum hatası';
     },
     { enableHighAccuracy: true }
   );
